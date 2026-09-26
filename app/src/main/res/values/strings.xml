@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Word Peek</string>
+    <string name="process_text_label">Word Peek</string>
+    <string name="label_definition">DEFINITION</string>
+    <string name="label_wikipedia">WIKIPEDIA</string>
+    <string name="label_translation">TRANSLATION</string>
+    <string name="loading">Loading…</string>
+    <string name="no_definition">No dictionary entry found.</string>
+    <string name="no_wikipedia">No Wikipedia article found.</string>
+    <string name="no_translation">No translation available.</string>
+    <string name="network_error">Couldn\'t reach the server. Check your connection. (%1$s)</string>
+    <string name="server_error">%1$s returned an error (HTTP %2$d). Try again in a moment.</string>
+    <string name="parse_error">Got an unexpected response. (%1$s)</string>
+    <string name="copy">Copy</string>
+    <string name="copied">Copied</string>
+    <string name="replace">Replace</string>
+    <string name="close">Close</string>
+    <string name="how_to">Long-press a word in any app (Chrome, WhatsApp, Kindle, Reddit…). With instant pop-up on, a panel slides up with a dictionary definition, a Wikipedia summary and a translation, without leaving the app you\'re in.\n\nSome apps don\'t report text selections to Android. There, pick \"Word Peek\" from the selection menu instead (you may need to tap ⋮ to see it).</string>
+    <string name="a11y_label">Word Peek instant pop-up</string>
+    <string name="a11y_summary">Shows definitions as soon as you select a word</string>
+    <string name="a11y_description">Word Peek watches for text you select in other apps. When you select a word or short phrase (up to 6 words), it shows its definition, Wikipedia summary and translation in a panel at the bottom of the screen.\n\nThe selected text is sent to dictionaryapi.dev, Wikipedia and MyMemory to look it up. Word Peek doesn\'t read or store anything else, and ignores password fields.</string>
+    <string name="instant_title">Instant pop-up</string>
+    <string name="instant_on">On. Long-press a word in any app to see its definition.</string>
+    <string name="instant_off">Off. Turn it on to see definitions as soon as you select a word, without opening the selection menu.</string>
+    <string name="instant_enable">Turn on</string>
+    <string name="instant_settings">Accessibility settings</string>
+    <string name="instant_restricted">If Android says the setting is restricted (common for apps installed from a file): open App info below, tap ⋮ at the top right, choose \"Allow restricted settings\", then try again.</string>
+    <string name="app_info">App info</string>
+    <string name="text_fields_switch">Also pop up when selecting in text fields</string>
+    <string name="try_hint">Type a word to try it here</string>
+    <string name="try_button">Look it up</string>
+
+    <string-array name="language_codes" translatable="false">
+        <item>es</item>
+        <item>fr</item>
+        <item>de</item>
+        <item>it</item>
+        <item>pt</item>
+        <item>nl</item>
+        <item>ru</item>
+        <item>ja</item>
+        <item>ko</item>
+        <item>zh-CN</item>
+        <item>ar</item>
+        <item>hi</item>
+        <item>en</item>
+    </string-array>
+    <string-array name="language_names" translatable="false">
+        <item>Spanish</item>
+        <item>French</item>
+        <item>German</item>
+        <item>Italian</item>
+        <item>Portuguese</item>
+        <item>Dutch</item>
+        <item>Russian</item>
+        <item>Japanese</item>
+        <item>Korean</item>
+        <item>Chinese</item>
+        <item>Arabic</item>
+        <item>Hindi</item>
+        <item>English</item>
+    </string-array>
+</resources>
