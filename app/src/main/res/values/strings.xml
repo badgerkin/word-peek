@@ -16,6 +16,8 @@
     <string name="copied">Copied</string>
     <string name="replace">Replace</string>
     <string name="close">Close</string>
+    <!-- Button that opens the translation language list, e.g. "German ▾" -->
+    <string name="language_button">%1$s ▾</string>
     <string name="how_to">Long-press a word in any app (Chrome, WhatsApp, Kindle, Reddit…). With instant pop-up on, a panel slides up with a dictionary definition, a Wikipedia summary and a translation, without leaving the app you\'re in.\n\nSome apps don\'t report text selections to Android. There, pick \"Word Peek\" from the selection menu instead (you may need to tap ⋮ to see it).</string>
     <string name="a11y_label">Word Peek instant pop-up</string>
     <string name="a11y_summary">Shows definitions as soon as you select a word</string>

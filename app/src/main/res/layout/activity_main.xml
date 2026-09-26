@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#0F172A">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/content"
@@ -69,7 +68,7 @@
 
             <Button
                 android:id="@+id/btnAppInfo"
-                style="@android:style/Widget.DeviceDefault.Button.Borderless.Colored"
+                style="@style/TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_info" />
@@ -91,6 +90,7 @@
             android:layout_marginTop="32dp"
             android:backgroundTint="#94A3B8"
             android:hint="@string/try_hint"
+            android:importantForAutofill="no"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:textColor="#FFFFFF"

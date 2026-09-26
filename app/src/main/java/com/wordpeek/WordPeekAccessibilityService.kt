@@ -1,6 +1,7 @@
 package com.wordpeek
 
 import android.accessibilityservice.AccessibilityService
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
@@ -47,6 +48,7 @@ class WordPeekAccessibilityService : AccessibilityService() {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ->
                 // Another app came to the front.
                 if (shown && pkg != shownPackage && pkg != "com.android.systemui") hide()
+            else -> {}
         }
     }
 
@@ -103,6 +105,9 @@ class WordPeekAccessibilityService : AccessibilityService() {
         }
     }
 
+    // The sheet is the root of its own window, so it has no parent to inflate against, and
+    // the touch listener only watches for ACTION_OUTSIDE (clicks go to the buttons).
+    @SuppressLint("InflateParams", "ClickableViewAccessibility")
     private fun createSheet(): OverlaySheet {
         val themed = ContextThemeWrapper(this, R.style.AppTheme)
         val view = LayoutInflater.from(themed).inflate(R.layout.overlay_sheet, null)

@@ -14,6 +14,9 @@
         <item name="android:colorAccent">#60A5FA</item>
     </style>
 
+    <!-- Widget.DeviceDefault.Button.Borderless.Colored needs API 28; values-v28 switches to it. -->
+    <style name="TextButton" parent="@android:style/Widget.Material.Button.Borderless.Colored" />
+
     <style name="SectionLabel">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

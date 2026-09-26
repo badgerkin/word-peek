@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/sheet_background"
     android:clickable="true"
+    tools:ignore="KeyboardInaccessibleWidget"
     android:orientation="vertical"
     android:paddingLeft="20dp"
     android:paddingTop="20dp"
@@ -69,9 +71,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="?android:attr/selectableItemBackground"
-                    android:paddingLeft="12dp"
+                    android:paddingStart="12dp"
                     android:paddingTop="6dp"
-                    android:paddingRight="4dp"
+                    android:paddingEnd="4dp"
                     android:paddingBottom="6dp"
                     android:textColor="#60A5FA"
                     android:textSize="14sp"
@@ -100,21 +102,21 @@
 
         <Button
             android:id="@+id/btnReplace"
-            style="@android:style/Widget.DeviceDefault.Button.Borderless.Colored"
+            style="@style/TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/replace" />
 
         <Button
             android:id="@+id/btnCopy"
-            style="@android:style/Widget.DeviceDefault.Button.Borderless.Colored"
+            style="@style/TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/copy" />
 
         <Button
             android:id="@+id/btnClose"
-            style="@android:style/Widget.DeviceDefault.Button.Borderless.Colored"
+            style="@style/TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/close" />

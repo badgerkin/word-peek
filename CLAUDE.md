@@ -19,8 +19,8 @@ working state: history, what is and isn't verified, and what's left to do.
   and `build/`. Releases go to GitHub Releases, not into git.
 - The first sessions ran with Google's hosts blocked (dl.google.com, maven.google.com), so
   there was no Android SDK, Gradle/AGP, emulator or AndroidX. `tools/build-apk.sh` is the
-  workaround built for that (details below). The owner is moving to a session with
-  unrestricted network access to fix this properly.
+  workaround built for that (details below). Later sessions have open network access and
+  build with Gradle.
 - The owner tests on a Pixel 9 Pro running Android 17. Don't name the device in user
   docs: the app has no hardware requirements.
 - Owner's writing preferences: plain, direct prose. Avoid AI-sounding filler (the user
@@ -41,11 +41,26 @@ Only checked by building and static inspection (never run):
   rename.
 - Android 6/7 behaviour. ProGuard was run against the API 23 android.jar: the only missing
   framework references are behind `SDK_INT` checks.
-- The Gradle build has **never** been run. The AGP pinned in `build.gradle` (8.2.2) is too
-  old for compileSdk 37, and there's no Gradle wrapper.
-- The release build's `isMinifyEnabled = true` with `app/proguard-rules.pro` under R8.
+- The R8-minified release APK has never been installed, so `app/proguard-rules.pro` under
+  R8 is untested at runtime (it builds; all app classes survive).
 
-## Build today (workaround path)
+Verified by building: `./gradlew assembleDebug assembleRelease lint` passes with zero lint
+issues (AGP 9.4.1, Kotlin 2.4.20, Gradle 9.8.0, JDK 21, platform android-37.0).
+
+## Gradle build
+
+AGP 9 compiles Kotlin itself ("built-in Kotlin"), so there's no `kotlin-android` plugin in
+`app/build.gradle.kts` and no `kotlinOptions`; the JVM target follows `compileOptions`. The
+root `build.gradle.kts` lists `org.jetbrains.kotlin.android` with `apply false` only to raise
+the Kotlin version above the one AGP bundles. The SDK path comes from `ANDROID_HOME` or an
+untracked `local.properties`.
+
+Cloud sessions: Maven Central answers 429 (Too Many Requests) through the session proxy after
+a few builds. A user-level init script that adds Google's mirror
+(`https://maven-central.storage-download.googleapis.com/maven2/`) to `pluginManagement` and
+`dependencyResolutionManagement` fixes it. Keep that in `~/.gradle/init.d/`, never in the repo.
+
+## Fallback build (no Gradle)
 
 `tools/build-apk.sh`: aapt2 → kotlinc → ProGuard (shrink only) → dx → zipalign →
 apksigner, using the Ubuntu packages `aapt apksigner zipalign dalvik-exchange`, kotlinc 2.2
@@ -65,15 +80,12 @@ Quirks, all consequences of the old toolchain:
 
 1. ~~**Set up the new repo.**~~ Done: `badgerkin/word-peek` holds this tree minus
    `keystore/`, `dist/` and `build/`, on top of the owner's initial commit (MIT licence).
-2. **Get a real toolchain.** With open network: install Android cmdline-tools, platform 37,
-   build-tools, and a JDK 17/21. Update AGP and the Kotlin plugin to current releases, and
-   add the Gradle wrapper. Make `./gradlew assembleDebug assembleRelease` pass.
-   - Kotlin 2.x with AGP may use `kotlin { jvmToolchain(17) }` / `compilerOptions` instead
-     of the deprecated `kotlinOptions`.
-   - D8 desugars lambdas, so the Regex/split restriction only applies to the dx path. Once
-     Gradle works, decide whether to keep `tools/build-apk.sh` as a fallback or delete it.
-     If it's deleted, the Pattern-based code can stay; it's fine either way.
-   - Run Android lint (`./gradlew lint`) and fix what it reports, especially NewApi.
+2. ~~**Get a real toolchain.**~~ Done (see "Gradle build"). Lint found one real bug: the
+   buttons used `Widget.DeviceDefault.Button.Borderless.Colored`, which only exists from API
+   28, so they lost their style on Android 6/7. They now use `@style/TextButton` (Material
+   below 28, DeviceDefault from 28 via `values-v28`). Still open: whether to keep
+   `tools/build-apk.sh`. D8 desugars lambdas, so the Regex/split restriction only applies to
+   the dx path; the Pattern-based code is fine either way.
 3. **GitHub Actions release workflow.** On a `v*` tag: build the release APK and sign it
    from repo secrets (keystore base64 plus the three passwords/alias). Attach it to a
    GitHub Release, and derive versionCode/versionName from the tag. Also run build and

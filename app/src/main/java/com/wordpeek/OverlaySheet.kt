@@ -94,7 +94,7 @@ class OverlaySheet(
         val button = view.findViewById<TextView>(R.id.btnLanguage)
         val list = view.findViewById<LinearLayout>(R.id.languageList)
         val density = context.resources.displayMetrics.density
-        button.text = names[codes.indexOf(targetLanguage())] + " ▾"
+        button.text = context.getString(R.string.language_button, names[codes.indexOf(targetLanguage())])
         button.setOnClickListener {
             list.visibility = if (list.visibility == View.VISIBLE) View.GONE else View.VISIBLE
         }
@@ -107,7 +107,7 @@ class OverlaySheet(
             item.setPadding(pad, pad, pad, pad)
             item.setOnClickListener {
                 prefs.edit().putString("target_lang", codes[i]).apply()
-                button.text = names[i] + " ▾"
+                button.text = context.getString(R.string.language_button, names[i])
                 list.visibility = View.GONE
                 translate()
             }

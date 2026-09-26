@@ -84,9 +84,22 @@ tools/build-apk.sh            Gradle-free build script
 
 ## Building
 
-### Without Gradle
+### With Gradle
 
-`tools/build-apk.sh` runs aapt2 → kotlinc → ProGuard → dx → zipalign → apksigner directly. It works where Google's SDK and Maven hosts are unreachable.
+Requirements: JDK 17 or later, and the Android SDK with platform `android-37.0` (Gradle installs the build-tools it needs). Point Gradle at the SDK with `ANDROID_HOME` or a `local.properties` file containing `sdk.dir=/path/to/sdk`.
+
+```bash
+./gradlew assembleDebug      # → app/build/outputs/apk/debug/app-debug.apk
+./gradlew assembleRelease    # → app/build/outputs/apk/release/, minified with R8
+./gradlew lint
+adb install app/build/outputs/apk/debug/app-debug.apk
+```
+
+The build uses Android Gradle Plugin 9.4 with its built-in Kotlin support (Kotlin 2.4) and Gradle 9.8 through the wrapper. The release APK is signed only when `WORDPEEK_KEYSTORE` is set (see below); otherwise it comes out as `app-release-unsigned.apk`.
+
+### Without Gradle (fallback)
+
+`tools/build-apk.sh` runs aapt2 → kotlinc → ProGuard → dx → zipalign → apksigner directly. It was written for machines where Google's SDK and Maven hosts are unreachable. Use Gradle when you can.
 
 Requirements:
 - JDK 17 or later
@@ -113,15 +126,6 @@ Notes:
 - apksigner adds a v1 (JAR) signature because Android 6 can't verify v2 or later.
 - Release builds are signed with a private key that is never committed. Both build paths read it from `WORDPEEK_KEYSTORE`, `WORDPEEK_KEYSTORE_PASSWORD`, `WORDPEEK_KEY_ALIAS` and (optionally) `WORDPEEK_KEY_PASSWORD`. Android installs an update only if its signature matches the installed app, so keep the keystore and passwords backed up: losing them means users must uninstall to get updates.
 - The version is set by `VERSION_CODE` and `VERSION_NAME` at the top of the script. Keep them in step with `app/build.gradle.kts`.
-
-### With Android Studio or Gradle
-
-```bash
-./gradlew assembleDebug
-adb install app/build/outputs/apk/debug/app-debug.apk
-```
-
-The Gradle files target API 37 but haven't been built. The pinned Android Gradle Plugin (8.2.2 in `build.gradle`) is too old for API 37, so update it to a current release first. There's no Gradle wrapper checked in; generate one with `gradle wrapper`.
 
 ### Updating the README images
 
