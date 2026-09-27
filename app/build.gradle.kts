@@ -21,7 +21,8 @@ android {
             System.getenv("WORDPEEK_KEYSTORE")?.let { storeFile = file(it) }
             storePassword = System.getenv("WORDPEEK_KEYSTORE_PASSWORD")
             keyAlias = System.getenv("WORDPEEK_KEY_ALIAS")
-            keyPassword = System.getenv("WORDPEEK_KEY_PASSWORD")
+            // Keytool's default is one password for the keystore and the key.
+            keyPassword = System.getenv("WORDPEEK_KEY_PASSWORD") ?: storePassword
         }
     }
 

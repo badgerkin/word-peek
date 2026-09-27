@@ -18,9 +18,12 @@ working state: history, what is and isn't verified, and what's left to do.
 - When moving files into the new repo, leave out `keystore/`, `dist/` (old TapText APKs)
   and `build/`. Releases go to GitHub Releases, not into git.
 - The first sessions ran with Google's hosts blocked (dl.google.com, maven.google.com), so
-  there was no Android SDK, Gradle/AGP, emulator or AndroidX. `tools/build-apk.sh` is the
-  workaround built for that (details below). Later sessions have open network access and
-  build with Gradle.
+  there was no Android SDK, Gradle/AGP, emulator or AndroidX. They built with
+  `tools/build-apk.sh` (aapt2, kotlinc, ProGuard, dx, apksigner by hand). Later sessions
+  have open network access, and the script was deleted once Gradle worked: the owner builds
+  and signs locally with Gradle and doesn't want to depend on GitHub Actions for either.
+  Code that uses `java.util.regex.Pattern` instead of Kotlin's `Regex`/`split` dates from
+  the dx restriction; either is fine now.
 - The owner tests on a Pixel 9 Pro running Android 17. Don't name the device in user
   docs: the app has no hardware requirements.
 - Owner's writing preferences: plain, direct prose. Avoid AI-sounding filler (the user
@@ -46,6 +49,11 @@ Only checked by building and static inspection (never run):
 
 Verified by building: `./gradlew assembleDebug assembleRelease lint` passes with zero lint
 issues (AGP 9.4.1, Kotlin 2.4.20, Gradle 9.8.0, JDK 21, platform android-37.0).
+Signing was checked with a throwaway key: with the `WORDPEEK_KEYSTORE*` variables set,
+`assembleRelease` produces `app-release.apk` with v1 and v2 signatures (`apksigner verify
+--min-sdk-version 23`); without them, `app-release-unsigned.apk`. `WORDPEEK_KEY_PASSWORD`
+falls back to the keystore password. Without that fallback, AGP reports the misleading
+"Keystore file not set".
 
 ## Gradle build
 
@@ -60,22 +68,6 @@ a few builds. A user-level init script that adds Google's mirror
 (`https://maven-central.storage-download.googleapis.com/maven2/`) to `pluginManagement` and
 `dependencyResolutionManagement` fixes it. Keep that in `~/.gradle/init.d/`, never in the repo.
 
-## Fallback build (no Gradle)
-
-`tools/build-apk.sh`: aapt2 → kotlinc → ProGuard (shrink only) → dx → zipalign →
-apksigner, using the Ubuntu packages `aapt apksigner zipalign dalvik-exchange`, kotlinc 2.2
-from GitHub, ProGuard 7.10 jars from Maven Central, and platform jars from
-`raw.githubusercontent.com/Sable/android-platforms/master/android-NN/android.jar`.
-Quirks, all consequences of the old toolchain:
-- Ubuntu's aapt2 can't read the API 36+ resource table, so resources link against API 34
-  (`LINK_JAR`). The APK manifest therefore says `compileSdkVersion=34`. That's cosmetic.
-- dx can't handle `invokedynamic` below min SDK 26. So kotlinc uses
-  `-Xlambdas=class -Xsam-conversions=class`, ProGuard strips the unused stdlib, and the code
-  avoids `kotlin.text.Regex` and `String.split` (they pull in stdlib indy lambdas). It uses
-  `java.util.regex.Pattern` instead. If dx fails with "invokedynamic requires
-  --min-sdk-version >= 26", a newly used stdlib function is the cause.
-- Signing uses the `WORDPEEK_KEYSTORE*` environment variables, the same ones Gradle reads.
-
 ## To do, in order
 
 1. ~~**Set up the new repo.**~~ Done: `badgerkin/word-peek` holds this tree minus
@@ -83,10 +75,12 @@ Quirks, all consequences of the old toolchain:
 2. ~~**Get a real toolchain.**~~ Done (see "Gradle build"). Lint found one real bug: the
    buttons used `Widget.DeviceDefault.Button.Borderless.Colored`, which only exists from API
    28, so they lost their style on Android 6/7. They now use `@style/TextButton` (Material
-   below 28, DeviceDefault from 28 via `values-v28`). Still open: whether to keep
-   `tools/build-apk.sh`. D8 desugars lambdas, so the Regex/split restriction only applies to
-   the dx path; the Pattern-based code is fine either way.
-3. **GitHub Actions release workflow.** On a `v*` tag: build the release APK and sign it
+   below 28, DeviceDefault from 28 via `values-v28`). `tools/build-apk.sh` was deleted.
+   `app/proguard-rules.pro` still has `-dontobfuscate -dontoptimize` from the ProGuard days;
+   consider dropping them once a release build has been tested on a device.
+3. **GitHub Actions release workflow.** A convenience, not the only way to release: local
+   `./gradlew assembleRelease` with the `WORDPEEK_KEYSTORE*` variables must keep working.
+   On a `v*` tag: build the release APK and sign it
    from repo secrets (keystore base64 plus the three passwords/alias). Attach it to a
    GitHub Release, and derive versionCode/versionName from the tag. Also run build and
    lint on every PR.
@@ -143,7 +137,7 @@ Quirks, all consequences of the old toolchain:
 - Keep the app dependency-free unless there's a strong reason. Small APK and fewer
   permissions are selling points.
 - Every user-visible string goes in `res/values/strings.xml`.
-- Bump `versionCode` and `versionName` in both `app/build.gradle.kts` and
-  `tools/build-apk.sh` (until the workflow derives them from tags).
+- Bump `versionCode` and `versionName` in `app/build.gradle.kts` (until the workflow
+  derives them from tags).
 - README images come from `docs/images/screens.html` (`render.js`), and the Android 6–7
   PNG icons from `docs/images/render-icons.js`. Update them when the UI or icon changes.

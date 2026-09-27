@@ -79,7 +79,6 @@ app/src/main/
   java/com/wordpeek/          Kotlin sources (see above)
   res/                        layouts, strings, styles, adaptive icon, accessibility config
 docs/images/                  README renders, plus the HTML and script that produce them
-tools/build-apk.sh            Gradle-free build script
 ```
 
 ## Building
@@ -95,37 +94,30 @@ Requirements: JDK 17 or later, and the Android SDK with platform `android-37.0` 
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The build uses Android Gradle Plugin 9.4 with its built-in Kotlin support (Kotlin 2.4) and Gradle 9.8 through the wrapper. The release APK is signed only when `WORDPEEK_KEYSTORE` is set (see below); otherwise it comes out as `app-release-unsigned.apk`.
+The build uses Android Gradle Plugin 9.4 with its built-in Kotlin support (Kotlin 2.4) and Gradle 9.8 through the wrapper. The release APK is signed only when `WORDPEEK_KEYSTORE` is set (see below); otherwise it comes out as `app-release-unsigned.apk`. Builds need no GitHub service: everything runs on your own machine.
 
-### Without Gradle (fallback)
+### Signing a release
 
-`tools/build-apk.sh` runs aapt2 → kotlinc → ProGuard → dx → zipalign → apksigner directly. It was written for machines where Google's SDK and Maven hosts are unreachable. Use Gradle when you can.
-
-Requirements:
-- JDK 17 or later
-- Kotlin compiler 2.x ([GitHub releases](https://github.com/JetBrains/kotlin/releases))
-- ProGuard 7.x: `com.guardsquare:proguard-base` and its runtime dependencies from Maven Central (`proguard-core`, `kotlin-stdlib`, `kotlin-metadata-jvm`, `gson`, `log4j-api`, `log4j-core`), all in one directory
-- Ubuntu/Debian packages: `sudo apt-get install aapt apksigner zipalign dalvik-exchange`
-- Platform jars: `android.jar` for API 37 (to compile) and for API 34 (to link resources). The [Sable/android-platforms](https://github.com/Sable/android-platforms) repository has both, under `android-37/` and `android-34/`.
+Release builds are signed with a private key that is never committed. Create one once with the JDK's `keytool`:
 
 ```bash
-ANDROID_JAR=/path/to/android-37.jar \
-LINK_JAR=/path/to/android-34.jar \
-KOTLIN_HOME=/path/to/kotlinc \
-PROGUARD_HOME=/path/to/proguard-jars \
-WORDPEEK_KEYSTORE=/path/to/release.jks \
-WORDPEEK_KEYSTORE_PASSWORD=... \
-WORDPEEK_KEY_ALIAS=wordpeek \
-tools/build-apk.sh
-# → build/WordPeek.apk
+keytool -genkeypair -v -keystore wordpeek-release.jks -alias wordpeek \
+  -keyalg RSA -keysize 4096 -validity 10000
 ```
 
-Notes:
-- Ubuntu's aapt2 can't parse the resource table in API 36+ platform jars, hence the separate `LINK_JAR`. Framework resource IDs don't change between versions, so the output is the same.
-- dx can only convert `invokedynamic` for Android 8+, and doesn't desugar it. So kotlinc runs with `-jvm-target 1.8 -Xlambdas=class -Xsam-conversions=class`, and ProGuard (`app/proguard-rules.pro`, shrink only) removes the unused parts of the Kotlin stdlib, which uses indy lambdas internally. Some stdlib functions the app might call still do, notably `kotlin.text.Regex` and `split`; the code uses `java.util.regex.Pattern` instead. If a change pulls one in, dx fails with "invokedynamic requires --min-sdk-version >= 26".
-- apksigner adds a v1 (JAR) signature because Android 6 can't verify v2 or later.
-- Release builds are signed with a private key that is never committed. Both build paths read it from `WORDPEEK_KEYSTORE`, `WORDPEEK_KEYSTORE_PASSWORD`, `WORDPEEK_KEY_ALIAS` and (optionally) `WORDPEEK_KEY_PASSWORD`. Android installs an update only if its signature matches the installed app, so keep the keystore and passwords backed up: losing them means users must uninstall to get updates.
-- The version is set by `VERSION_CODE` and `VERSION_NAME` at the top of the script. Keep them in step with `app/build.gradle.kts`.
+Keep it outside the repo. `.gitignore` excludes `*.jks`, `*.keystore` and `keystore.properties` in case one ends up in the tree. Then build with the key's location and passwords in the environment:
+
+```bash
+WORDPEEK_KEYSTORE=/path/to/wordpeek-release.jks \
+WORDPEEK_KEYSTORE_PASSWORD=... \
+WORDPEEK_KEY_ALIAS=wordpeek \
+./gradlew assembleRelease
+# → app/build/outputs/apk/release/app-release.apk
+```
+
+`WORDPEEK_KEY_PASSWORD` is only needed if the key's password differs from the keystore's. The APK carries a v1 (JAR) signature as well as v2, because Android 6 can't verify v2.
+
+Android installs an update only if its signature matches the installed app. Back up the keystore and passwords somewhere other than this computer: if they're lost, users have to uninstall to get updates.
 
 ### Updating the README images
 

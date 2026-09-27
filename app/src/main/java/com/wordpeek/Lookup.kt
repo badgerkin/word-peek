@@ -70,8 +70,6 @@ object Lookup {
         return JSONObject(body).optJSONArray("en")
     }
 
-    // java.util.regex rather than kotlin.text.Regex: the latter pulls in stdlib lambdas
-    // compiled to invokedynamic, which dx can't convert for Android 6-7.
     private val FORM_OF_LINK = Pattern.compile("form-of-definition-link.*?title=\"([^\"#]+)")
     private val WHITESPACE = Pattern.compile("\\s+")
 
